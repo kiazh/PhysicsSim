@@ -1,6 +1,13 @@
 #include <iostream>
 #include <raylib.h>
+#include <cmath>
+//For now we are going to
+void balPosition (int mass1, int mass2, int distance)
+{
+    const int G =  6.6743 * pow(10, -11);
+    int acl = (G* mass2)/pow(distance, 2);
 
+}
 
 int main ()
 {
@@ -15,7 +22,7 @@ int main ()
     while (!WindowShouldClose())
     {
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
         DrawCircleV(ballPos,50,RED);
         EndDrawing();
     }
