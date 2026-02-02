@@ -2,7 +2,8 @@
 #include <raylib.h>
 #include <cmath>
 #include <vector>
-const float G = 500;
+
+const float G = 500.0f;
 const float dt = 0.1f;
 const float soft = 1.0f;
 
@@ -14,45 +15,65 @@ struct Body {
     float radius;
 };
 
-float distance(const Vector2& p1, const Vector2& p2)
-{
-    float dx = abs(p1.x - p2.x);
-    float dy = abs(p1.y - p2.y);
+float distanceSQ(const Vector2& p1, const Vector2& p2) {
+    float dx = p1.x - p2.x;
+    float dy = p1.y - p2.y;
     return dx*dx + dy*dy;
 }
 
-void UpdateBodies(std::vector<Body>& bodies)
-{
+Vector2 gravitationalAccel(const Body& b1, const Body& b2) {
+    float dSq = distanceSQ(b1.pos, b2.pos);
+    float dist = sqrtf(dSq);
 
+    if (dist < soft) return {0.0f, 0.0f};
+
+    float strength = (G * b2.mass) / (dSq * dist + soft);
+
+    float dx = b2.pos.x - b1.pos.x;
+    float dy = b2.pos.y - b1.pos.y;
+
+    return {dx * strength / dist, dy * strength / dist};
 }
 
+// MISSING: Add this function!
+void UpdateBodies(std::vector<Body>& bodies) {
+    for (size_t i = 0; i < bodies.size(); ++i) {
+        Vector2 accel = {0, 0};
+        for (size_t j = 0; j < bodies.size(); ++j) {
+            if (i == j) continue;
+            Vector2 a = gravitationalAccel(bodies[i], bodies[j]);
+            accel.x += a.x;
+            accel.y += a.y;
+        }
 
-
-void balPosition (float mass1,float mass2, float distance)
-{
-    Vector2 ballPos = {(float)250, (float)450};
-    double acl = (G* mass2)/pow(distance, 2);
-
-
-return Vector2 ballPos;
+        // Euler integration
+        bodies[i].vel.x += accel.x * dt;
+        bodies[i].vel.y += accel.y * dt;
+        bodies[i].pos.x += bodies[i].vel.x * dt;
+        bodies[i].pos.y += bodies[i].vel.y * dt;
+    }
 }
 
-int main ()
-{
-    int width =  900;
-    int height = 900;
-    Vector2 ballPos = {(float)450, (float)450};
+int main() {
+    InitWindow(900, 900, "Gravity Sim");
+    SetTargetFPS(60);
 
-    InitWindow (width, height, "burger");
+    std::vector<Body> bodies = {
+        {{400,450}, {0,5}, 15, YELLOW, 20},
+        {{550,450}, {0,-3}, 1, BLUE, 10},
+        {{350,500}, {4,0}, 2, GREEN, 12}
+    };
 
-    SetTargetFPS(30);
+    while (!WindowShouldClose()) {
+        UpdateBodies(bodies);
 
-    while (!WindowShouldClose())
-    {
         BeginDrawing();
         ClearBackground(BLACK);
-        DrawCircleV(ballPos,50,RED);
+        for (const auto& b : bodies) {
+            DrawCircleV(b.pos, b.radius, b.color);
+        }
         EndDrawing();
     }
     CloseWindow();
+    return 0;
 }
