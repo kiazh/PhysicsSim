@@ -55,7 +55,7 @@ int main() {
     InitWindow(1920, 1080, "Gravity Sim");
     SetTargetFPS(60);
 
-    float centerX = 900, centerY = 540;
+    float centerX = 960, centerY = 540;
     float M = 10000;
 
     float r1 = 200;
@@ -65,9 +65,10 @@ int main() {
     float v2 = sqrtf(G * M / r2);
 
     std::vector<Body> bodies = {
-        {{centerX, centerY}, {0, }, M, YELLOW, 30},
-        {{centerX, centerY - r1}, {v1, 0}, 50, BLUE, 12},
-        {{centerX + r2, centerY}, {0, v2}, 30, GREEN, 10}
+        {{centerX, centerY}, {0, 0}, M, YELLOW, 30},
+        {{centerX, centerY - r1}, {v1, 0}, 1, BLUE, 12},
+        {{centerX + r2, centerY}, {0, v2}, 1, GREEN, 10},
+        {{centerX, centerY + r1}, {-v1, 0}, 1, WHITE, 15}
     };
 
     while (!WindowShouldClose()) {
