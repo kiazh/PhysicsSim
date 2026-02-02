@@ -3,9 +3,9 @@
 #include <cmath>
 #include <vector>
 
-const float G = 500.0f;
-const float dt = 0.1f;
-const float soft = 1.0f;
+const float G = 5000.0f;
+const float dt = 0.016f;
+const float soft = 10.0f;
 
 struct Body {
     Vector2 pos;
@@ -22,20 +22,18 @@ float distanceSQ(const Vector2& p1, const Vector2& p2) {
 }
 
 Vector2 gravitationalAccel(const Body& b1, const Body& b2) {
-    float dSq = distanceSQ(b1.pos, b2.pos);
-    float dist = sqrtf(dSq);
-
-    if (dist < soft) return {0.0f, 0.0f};
-
-    float strength = (G * b2.mass) / (dSq * dist + soft);
-
     float dx = b2.pos.x - b1.pos.x;
     float dy = b2.pos.y - b1.pos.y;
+    float dSq = dx*dx + dy*dy;
+
+    if (dSq < soft * soft) return {0.0f, 0.0f};
+
+    float dist = sqrtf(dSq);
+    float strength = (G * b2.mass) / dSq;
 
     return {dx * strength / dist, dy * strength / dist};
 }
 
-// MISSING: Add this function!
 void UpdateBodies(std::vector<Body>& bodies) {
     for (size_t i = 0; i < bodies.size(); ++i) {
         Vector2 accel = {0, 0};
@@ -46,7 +44,6 @@ void UpdateBodies(std::vector<Body>& bodies) {
             accel.y += a.y;
         }
 
-        // Euler integration
         bodies[i].vel.x += accel.x * dt;
         bodies[i].vel.y += accel.y * dt;
         bodies[i].pos.x += bodies[i].vel.x * dt;
@@ -55,13 +52,22 @@ void UpdateBodies(std::vector<Body>& bodies) {
 }
 
 int main() {
-    InitWindow(900, 900, "Gravity Sim");
+    InitWindow(1920, 1080, "Gravity Sim");
     SetTargetFPS(60);
 
+    float centerX = 900, centerY = 540;
+    float M = 10000;
+
+    float r1 = 200;
+    float v1 = sqrtf(G * M / r1);
+
+    float r2 = 300;
+    float v2 = sqrtf(G * M / r2);
+
     std::vector<Body> bodies = {
-        {{400,450}, {0,5}, 15, YELLOW, 20},
-        {{550,450}, {0,-3}, 1, BLUE, 10},
-        {{350,500}, {4,0}, 2, GREEN, 12}
+        {{centerX, centerY}, {0, }, M, YELLOW, 30},
+        {{centerX, centerY - r1}, {v1, 0}, 50, BLUE, 12},
+        {{centerX + r2, centerY}, {0, v2}, 30, GREEN, 10}
     };
 
     while (!WindowShouldClose()) {
